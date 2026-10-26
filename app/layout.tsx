@@ -30,13 +30,13 @@ export const metadata: Metadata = {
     default: `${restaurant.name} · Menú`,
     template: `%s · ${restaurant.name}`,
   },
-  description: `La carta de ${restaurant.name}, actualizada en el momento.`,
+  description: `La carta de ${restaurant.name} ${restaurant.tagline}, con precios actualizados.`,
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2f4ef" },
-    { media: "(prefers-color-scheme: dark)", color: "#10241d" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#141917" },
   ],
 };
 

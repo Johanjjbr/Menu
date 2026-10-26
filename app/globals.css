@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 /*
- * Tokens de diseño — "carta de bodegón"
- * Verde botella como tinta, salvia claro de fondo, mostaza para
- * destacar y rojo vermut para lo agotado / acciones destructivas.
+ * Tokens de diseño — La Carmela, versión sobria
+ * Fondo blanco roto, tinta carbón y el verde lima de la marca solo como
+ * acento (pestaña activa, menú del día, corchetes del logo).
  */
 :root {
-  --paper: #f2f4ef;
+  --paper: #f6f7f4;
   --card: #ffffff;
-  --ink: #173b2f;
-  --ink-soft: #4d6158;
-  --line: #c9d1c7;
-  --mustard: #d9a21b;
-  --vermouth: #a3242b;
+  --ink: #1f2622;
+  --ink-soft: #5d6862;
+  --line: #dce1d9;
+  --brand: #8cc63f;      /* verde lima de La Carmela, solo como acento */
+  --brand-ink: #3f6b12;  /* verde oscuro legible sobre fondo claro */
+  --vermouth: #a8432e;   /* agotado / acciones destructivas */
 }
 
 @theme inline {
@@ -21,7 +22,8 @@
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-line: var(--line);
-  --color-mustard: var(--mustard);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
   --color-vermouth: var(--vermouth);
   --font-sans: var(--font-figtree);
   --font-display: var(--font-bitter);
@@ -29,20 +31,21 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #10241d;
-    --card: #173229;
-    --ink: #eef2ea;
-    --ink-soft: #a9bab0;
-    --line: #2f4b40;
-    --mustard: #e8b43a;
-    --vermouth: #e0646a;
+    --paper: #141917;
+    --card: #1c2320;
+    --ink: #eef1ec;
+    --ink-soft: #a3ada7;
+    --line: #2c3631;
+    --brand: #9bd14e;
+    --brand-ink: #b5df7a;
+    --vermouth: #e07a63;
   }
 }
 
 html {
   scroll-behavior: smooth;
   /* deja lugar para la barra de categorías fija al hacer scroll a un ancla */
-  scroll-padding-top: 4.5rem;
+  scroll-padding-top: 7.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -58,7 +61,7 @@ body {
 
 /* Foco visible para navegación con teclado */
 :focus-visible {
-  outline: 2px solid var(--mustard);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 
@@ -92,4 +95,28 @@ body {
     left: 0;
     top: 0;
   }
+}
+
+/* Corchetes como los del logo de La Carmela: ⌊ Café · Bar ⌋ */
+.brackets {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.7em 0.15em;
+}
+.brackets::before,
+.brackets::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 0.45em;
+  height: 1.1em;
+  border-bottom: 2px solid var(--brand);
+}
+.brackets::before {
+  left: 0;
+  border-left: 2px solid var(--brand);
+}
+.brackets::after {
+  right: 0;
+  border-right: 2px solid var(--brand);
 }

@@ -1,34 +1,38 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
+import { PartyPopper, MessageCircle } from "lucide-react";
 import { getMenu } from "@/lib/data/menu";
-import { restaurant } from "@/lib/config";
-import { CategoryNav } from "@/components/menu/CategoryNav";
-import { ProductRow } from "@/components/menu/ProductRow";
+import { restaurant, whatsappLink } from "@/lib/config";
+import { MenuBrowser } from "@/components/menu/MenuBrowser";
 
 export const metadata = { title: "Menú" };
 
 /**
- * Vista pública de la carta (/menu) — la que abre el QR.
+ * Vista pública de la carta (/menu), la que abre el QR.
  *
- * El encabezado es estático y se prerenderiza. La carta se consulta en
- * cada visita (await connection()) para que un precio o un "Agotado"
- * cambiado en el admin se vea al instante, sin esperar ningún cache.
+ * Encabezado y pie son estáticos (se prerenderizan). La carta se
+ * consulta en cada visita (await connection()) para que un precio o un
+ * "Agotado" cambiado en el admin se vea al instante.
  */
 export default function MenuPage() {
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 pb-16">
-      <header className="px-4 pt-10 pb-6 sm:px-6">
-        <h1 className="font-display text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+    <main className="mx-auto w-full max-w-2xl flex-1">
+      <header className="px-4 pt-10 pb-5 sm:px-6">
+        <h1 className="font-display text-[2.75rem] font-extrabold leading-none tracking-tight sm:text-6xl">
           {restaurant.name}
         </h1>
         {restaurant.tagline && (
-          <p className="mt-2 text-lg text-ink-soft">{restaurant.tagline}</p>
+          <p className="mt-3 text-lg font-medium text-ink-soft">
+            <span className="brackets">{restaurant.tagline}</span>
+          </p>
         )}
       </header>
 
       <Suspense fallback={<MenuSkeleton />}>
         <MenuContent />
       </Suspense>
+
+      <EventsFooter />
     </main>
   );
 }
@@ -45,38 +49,44 @@ async function MenuContent() {
     );
   }
 
-  return (
-    <>
-      <CategoryNav categories={menu.map(({ id, name }) => ({ id, name }))} />
+  return <MenuBrowser categories={menu} />;
+}
 
-      <div className="mt-2 space-y-10 px-4 sm:px-6">
-        {menu.map((category) => (
-          <section key={category.id} id={`cat-${category.id}`} aria-labelledby={`h-${category.id}`}>
-            <h2
-              id={`h-${category.id}`}
-              className="font-display text-2xl font-bold border-b-2 border-ink pb-1"
-            >
-              {category.name}
-            </h2>
-            <ul className="divide-y divide-line">
-              {category.products.map((product) => (
-                <ProductRow key={product.id} product={product} />
-              ))}
-            </ul>
-          </section>
-        ))}
+/** Pie con la invitación a eventos, como en la carta impresa. */
+function EventsFooter() {
+  const link = whatsappLink(`Hola ${restaurant.name}, quiero consultar por un evento.`);
+  return (
+    <footer className="mt-14 px-4 pb-12 sm:px-6">
+      <div className="rounded-2xl bg-ink p-6 text-paper">
+        <PartyPopper className="size-6 text-brand" aria-hidden />
+        <h2 className="mt-3 font-display text-2xl font-bold">Festejá tus momentos especiales</h2>
+        <p className="mt-1 leading-relaxed text-paper/80">
+          Baby showers, bautismos, reuniones, cumpleaños y aniversarios. Organizamos tu evento en{" "}
+          {restaurant.name}.
+        </p>
+        {link && (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 font-semibold text-[#1f2622]"
+          >
+            <MessageCircle className="size-4" aria-hidden /> Consultar por WhatsApp
+          </a>
+        )}
       </div>
-    </>
+      <p className="mt-6 text-center text-sm text-ink-soft">Precios en pesos argentinos.</p>
+    </footer>
   );
 }
 
-/** Esqueleto mientras carga la carta (también va en el HTML estático). */
 function MenuSkeleton() {
   return (
     <div className="animate-pulse px-4 sm:px-6" aria-label="Cargando la carta">
-      <div className="flex gap-2 py-3">
-        {[80, 104, 72, 92].map((w) => (
-          <div key={w} className="h-9 rounded-full bg-line/60" style={{ width: w }} />
+      <div className="h-11 rounded-full bg-line/60" />
+      <div className="mt-4 flex gap-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-9 flex-1 rounded bg-line/50" />
         ))}
       </div>
       {[0, 1].map((s) => (

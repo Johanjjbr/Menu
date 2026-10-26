@@ -1,6 +1,7 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -12,6 +13,9 @@ import { createClient } from "@/lib/supabase/server";
  * (y en las políticas RLS de la base).
  */
 export async function requireUser() {
+  // Marca el render como "de request": Supabase usa Date.now() para ver si
+  // el token venció, y Next.js no permite eso durante el prerender.
+  await connection();
   const supabase = await createClient();
   const {
     data: { user },

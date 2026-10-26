@@ -23,7 +23,7 @@ async function NewProduct() {
   const { supabase } = await requireUser();
   const { data: categories } = await supabase
     .from("categories")
-    .select("id, name")
+    .select("id, name, price_columns")
     .order("sort_order")
     .order("name");
 

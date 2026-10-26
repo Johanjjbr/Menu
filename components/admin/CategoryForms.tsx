@@ -1,23 +1,18 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, useTransition } from "react";
-import { Plus, ChevronUp, ChevronDown, Pencil, Check, X } from "lucide-react";
-import {
-  createCategory,
-  renameCategory,
-  moveCategory,
-  deleteCategory,
-} from "@/app/admin/actions";
-import type { ActionState } from "@/lib/types";
+import { useActionState, useEffect, useRef, useTransition } from "react";
+import Link from "next/link";
+import { Plus, ChevronUp, ChevronDown, Pencil } from "lucide-react";
+import { createCategory, moveCategory, deleteCategory } from "@/app/admin/actions";
+import { CATEGORY_KINDS, MENU_GROUPS, type CategoryKind } from "@/lib/types";
 import { DeleteButton } from "./DeleteButton";
 import { inputClass, buttonPrimary, iconButton, FormError } from "./ui";
 
-/** Formulario para agregar una categoría nueva (queda al final del orden). */
+/** Alta rápida: nombre + grupo (el formato y las columnas se editan después). */
 export function CategoryCreateForm() {
   const [state, action, pending] = useActionState(createCategory, undefined);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Limpia el campo cuando se creó bien
   useEffect(() => {
     if (state?.ok) formRef.current?.reset();
   }, [state]);
@@ -27,15 +22,22 @@ export function CategoryCreateForm() {
       <label htmlFor="new-category" className="block text-sm font-semibold">
         Nueva categoría
       </label>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <input
           id="new-category"
           name="name"
           placeholder="Ej: Pastas"
           required
           maxLength={80}
-          className={inputClass}
+          className={`${inputClass} min-w-0 flex-1 basis-48`}
         />
+        <select name="menu_group" aria-label="Grupo" defaultValue="comidas" className={`${inputClass} w-auto`}>
+          {MENU_GROUPS.map((g) => (
+            <option key={g.id} value={g.id}>
+              {g.label}
+            </option>
+          ))}
+        </select>
         <button type="submit" disabled={pending} className={`${buttonPrimary} shrink-0`}>
           <Plus className="size-4" aria-hidden /> Agregar
         </button>
@@ -45,33 +47,27 @@ export function CategoryCreateForm() {
   );
 }
 
-/** Una fila de la lista: subir/bajar, renombrar en el lugar y borrar. */
+/** Fila de la lista: subir/bajar dentro del grupo, editar y borrar. */
 export function CategoryRow({
   id,
   name,
+  kind,
+  priceColumns,
   productCount,
   isFirst,
   isLast,
 }: {
   id: string;
   name: string;
+  kind: CategoryKind;
+  priceColumns: string[];
   productCount: number;
   isFirst: boolean;
   isLast: boolean;
 }) {
-  const [editing, setEditing] = useState(false);
-  // Envolvemos la acción para salir del modo edición cuando se guardó bien
-  const [state, action, saving] = useActionState(
-    async (prev: ActionState, formData: FormData) => {
-      const result = await renameCategory(prev, formData);
-      if (result?.ok) setEditing(false);
-      return result;
-    },
-    undefined,
-  );
   const [moving, startMove] = useTransition();
-
   const move = (dir: "up" | "down") => startMove(() => moveCategory(id, dir));
+  const kindLabel = CATEGORY_KINDS.find((k) => k.id === kind)?.label;
 
   return (
     <li className="flex items-center gap-1 px-2 py-2 sm:px-3">
@@ -96,54 +92,23 @@ export function CategoryRow({
         </button>
       </div>
 
-      {editing ? (
-        <form action={action} className="flex flex-1 items-center gap-1">
-          <input type="hidden" name="id" value={id} />
-          <input
-            name="name"
-            defaultValue={name}
-            required
-            maxLength={80}
-            autoFocus
-            aria-label="Nombre de la categoría"
-            className={`${inputClass} py-1.5`}
-          />
-          <button type="submit" disabled={saving} className={iconButton} aria-label="Guardar nombre">
-            <Check className="size-4" aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditing(false)}
-            className={iconButton}
-            aria-label="Cancelar"
-          >
-            <X className="size-4" aria-hidden />
-          </button>
-          <FormError message={state?.error} />
-        </form>
-      ) : (
-        <>
-          <div className="min-w-0 flex-1 px-2">
-            <p className="truncate font-semibold">{name}</p>
-            <p className="text-sm text-ink-soft">
-              {productCount === 1 ? "1 producto" : `${productCount} productos`}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className={iconButton}
-            aria-label={`Renombrar ${name}`}
-          >
-            <Pencil className="size-4" aria-hidden />
-          </button>
-          <DeleteButton
-            action={deleteCategory.bind(null, id)}
-            label={`Borrar ${name}`}
-            confirmText={`¿Borrar la categoría "${name}"?`}
-          />
-        </>
-      )}
+      <div className="min-w-0 flex-1 px-2">
+        <p className="truncate font-semibold">{name}</p>
+        <p className="truncate text-sm text-ink-soft">
+          {productCount === 1 ? "1 producto" : `${productCount} productos`}
+          {kind !== "list" && `, ${kindLabel?.toLowerCase()}`}
+          {priceColumns.length > 0 && `, columnas: ${priceColumns.join(" / ")}`}
+        </p>
+      </div>
+
+      <Link href={`/admin/categories/${id}`} className={iconButton} aria-label={`Editar ${name}`}>
+        <Pencil className="size-4" aria-hidden />
+      </Link>
+      <DeleteButton
+        action={deleteCategory.bind(null, id)}
+        label={`Borrar ${name}`}
+        confirmText={`¿Borrar la categoría "${name}"?`}
+      />
     </li>
   );
 }

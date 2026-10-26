@@ -27,7 +27,7 @@ async function EditProduct({ params }: { params: Promise<{ id: string }> }) {
 
   const [{ data: product }, { data: categories }] = await Promise.all([
     supabase.from("products").select("*").eq("id", id).maybeSingle(),
-    supabase.from("categories").select("id, name").order("sort_order").order("name"),
+    supabase.from("categories").select("id, name, price_columns").order("sort_order").order("name"),
   ]);
 
   if (!product) notFound();

@@ -5,7 +5,7 @@ import type { CategoryWithProducts } from "@/lib/types";
 
 /**
  * Trae la carta completa: categorías ordenadas, cada una con sus
- * productos ordenados por nombre. Una sola consulta gracias al
+ * productos ordenados (sort_order y después nombre). Una sola consulta gracias al
  * "embedding" de PostgREST (products(*) dentro de categories).
  *
  * @param onlyWithProducts  si es true, oculta categorías vacías (para /menu)
@@ -18,6 +18,7 @@ export async function getMenu({ onlyWithProducts = true } = {}) {
     .select("*, products(*)")
     .order("sort_order", { ascending: true })
     .order("name", { ascending: true })
+    .order("sort_order", { referencedTable: "products", ascending: true })
     .order("title", { referencedTable: "products", ascending: true });
 
   if (error) {

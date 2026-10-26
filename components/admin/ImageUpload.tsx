@@ -24,9 +24,17 @@ const QUALITY = 0.82;
 export function ImageUpload({
   initialUrl,
   onUploadingChange,
+  label = "Foto",
+  folder = "products",
+  round = false,
 }: {
   initialUrl: string | null;
   onUploadingChange?: (uploading: boolean) => void;
+  label?: string;
+  /** Carpeta dentro del bucket: "products" o "categories" */
+  folder?: string;
+  /** Vista previa circular (fotos de categoría) */
+  round?: boolean;
 }) {
   const [url, setUrl] = useState(initialUrl);
   const [uploading, setUploading] = useState(false);
@@ -52,7 +60,7 @@ export function ImageUpload({
     setBusy(true);
     try {
       const blob = await resizeToWebp(file);
-      const path = `products/${crypto.randomUUID()}.webp`;
+      const path = `${folder}/${crypto.randomUUID()}.webp`;
 
       const supabase = createClient();
       const { error: uploadError } = await supabase.storage
@@ -73,12 +81,16 @@ export function ImageUpload({
 
   return (
     <div className="space-y-2">
-      <span className="block text-sm font-semibold">Foto</span>
+      <span className="block text-sm font-semibold">{label}</span>
       <input type="hidden" name="image_url" value={url ?? ""} />
 
-      <div className="relative aspect-square w-full overflow-hidden rounded-xl border-2 border-dashed border-line bg-card">
+      <div
+        className={`relative aspect-square w-full overflow-hidden border-2 border-dashed border-line bg-card ${
+          round ? "max-w-48 rounded-full" : "max-w-56 rounded-xl md:max-w-none"
+        }`}
+      >
         {url ? (
-          <Image src={url} alt="Foto del producto" fill sizes="220px" className="object-cover" />
+          <Image src={url} alt="Vista previa de la foto" fill sizes="220px" className="object-cover" />
         ) : (
           <button
             type="button"

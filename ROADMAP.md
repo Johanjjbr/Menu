@@ -1,4 +1,4 @@
-# Mapa de ruta — Menú digital
+# Mapa de ruta — Menú digital La Carmela
 
 Leyenda: ✅ hecho · 🔜 próximo · ⏳ depende de otra cosa · 💡 idea a futuro
 
@@ -8,62 +8,64 @@ Leyenda: ✅ hecho · 🔜 próximo · ⏳ depende de otra cosa · 💡 idea a f
 
 | | Tarea | Quién |
 |---|---|---|
-| ⏳ | Invitar a Johan a la organización de Supabase (*Settings → Team → Invite*, rol Developer u Owner) | Julieta |
+| ✅ | Invitar a Johan a la organización de Supabase | Julieta |
+| ⏳ | Reconectar el conector de Supabase en Claude incluyendo la organización de Julieta (o aplicar `setup-completo.sql` a mano) | Johan |
 | ⏳ | Subir este repo a GitHub y agregar a ambos como colaboradores | Johan |
 | ⏳ | Importar el repo en Vercel desde la cuenta de Julieta | Julieta |
 | ⏳ | Si el repo es privado y estamos en Hobby: decidir entre repo público, que Julieta haga los merges a `main` o pasar a Pro | Ambos |
 
 ## Fase 1 — Proyecto y base de datos
 
-- ✅ Proyecto Next.js 16 (App Router, TypeScript, Tailwind v4, Cache Components)
-- ✅ Dependencias: `@supabase/supabase-js`, `@supabase/ssr`, `lucide-react`, `qrcode`
-- ✅ Migración SQL: `supabase/migrations/20261026000000_init.sql`
-  - tablas `categories` y `products`
-  - RLS: lectura pública, escritura solo para usuarios autenticados
-  - bucket de Storage `product-images` con sus políticas
-- ✅ Datos de ejemplo: `supabase/seed.sql`
-- ⏳ **Ejecutar la migración en Supabase** (cuando tengamos acceso)
+- ✅ Next.js 16 (App Router, TypeScript, Tailwind v4, Cache Components)
+- ✅ Esquema v2 pensado para la carta real:
+  - categorías con **grupo** (Cafetería / Comidas / Bebidas), **formato** (lista, menú del día, promos), **columnas de precio** y foto
+  - productos con **varios precios** (tamaños y combos), aclaración corta y marca "a revisar"
+  - función `increase_prices` para **aumentos masivos** por porcentaje
+  - RLS: lectura pública, escritura solo autenticados · bucket `product-images`
+- ✅ **Carta de La Carmela transcripta** de las fotos: 15 categorías, 95 productos (`supabase/seed.sql`)
+- ✅ `supabase/setup-completo.sql`: todo en un archivo, probado en Postgres
+- ⏳ **Ejecutar el setup en Supabase**
 - ⏳ **Desactivar el registro público** (*Authentication → Sign In / Providers → Allow new users to sign up: OFF*)
-- ⏳ **Crear el usuario admin** (*Authentication → Users → Add user*)
+- ⏳ **Crear el usuario admin** (*Authentication → Users → Add user*, con *Auto Confirm*)
 
-## Fase 2 — Vista pública `/menu`
+## Fase 2 — Vista pública `/menu` (rediseño sobrio)
 
-- ✅ Clientes de Supabase: `lib/supabase/{server,client,public,proxy}.ts`
-- ✅ Carta mobile-first con barra de categorías fija y scrollspy
-- ✅ Precio con línea de puntos, foto opcional, "Agotado" tachado
-- ✅ Datos siempre frescos (sin cache): un cambio en el admin se ve al recargar
-- ✅ Modo oscuro automático, skeleton de carga, pantalla de error
-- ✅ `/` redirige a `/menu`
+- ✅ Encabezado "La Carmela" con los corchetes del logo en verde lima
+- ✅ Pestañas fijas Cafetería / Comidas / Bebidas + chips de categorías con scrollspy
+- ✅ Buscador en toda la carta (sin importar tildes)
+- ✅ Tablas de tamaños (pizzas, empanadas, gaseosas, cervezas)
+- ✅ Tarjeta destacada "Menú del día" y tarjetas de Promos
+- ✅ Precios por tamaño o combo, "Consultar" si no hay precio, "Agotado" tachado
+- ✅ Pie "Festejá tus momentos especiales" con botón de WhatsApp (configurable)
+- ✅ Modo oscuro automático
 
 ## Fase 3 — Autenticación y panel `/admin`
 
-- ✅ `proxy.ts`: refresca la sesión y protege todo `/admin/*`
-- ✅ Login con email y contraseña (`/admin/login`)
-- ✅ Productos: listado por categoría, crear, editar, borrar
-- ✅ Categorías: crear, renombrar, subir/bajar el orden, borrar (si no tiene productos)
-- ✅ Cada Server Action re-verifica al usuario (`requireUser`) además de RLS
-- ✅ Página `/admin/qr`: genera, descarga e imprime el QR de la carta
+- ✅ `proxy.ts` protege `/admin/*` y refresca la sesión
+- ✅ Productos agrupados por grupo y categoría, con filtro "Ver solo los que hay que revisar"
+- ✅ Formulario con editor de precios (filas por tamaño, autocompleta con las columnas de la categoría)
+- ✅ Categorías por grupo: crear, ordenar dentro del grupo, editar formato/columnas/nota/foto, borrar
+- ✅ Aumento masivo de precios con redondeo ($ 10 / 50 / 100 / 500)
+- ✅ Página `/admin/qr`
 
 ## Fase 4 — Imágenes y disponibilidad
 
-- ✅ Subida de fotos directo a Supabase Storage desde el navegador
-- ✅ Compresión en el navegador (máx. 1200 px, WebP) antes de subir
-- ✅ Al reemplazar o borrar un producto se borra su foto vieja
+- ✅ Fotos de producto y de sección (circular) a Supabase Storage, comprimidas en el navegador
 - ✅ Toggle Disponible / Agotado con actualización optimista
 
 ## Fase 5 — Puesta en producción
 
-- 🔜 Probar todo de punta a punta con el Supabase real
-- 🔜 Cargar variables de entorno en Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_RESTAURANT_NAME`, `NEXT_PUBLIC_RESTAURANT_TAGLINE`)
+- 🔜 **Revisar los 31 precios marcados** en /admin (ilegibles o dudosos en las fotos)
+- 🔜 Probar de punta a punta con el Supabase real (login, alta, edición, fotos, aumento)
+- 🔜 Variables de entorno en Vercel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_RESTAURANT_NAME`, `NEXT_PUBLIC_RESTAURANT_TAGLINE`, `NEXT_PUBLIC_WHATSAPP`
 - 🔜 Primer deploy y prueba desde un celular real
-- 🔜 Generar el QR desde el dominio definitivo e imprimirlo
-- 🔜 (Opcional) dominio propio en Vercel
+- 🔜 Generar el QR desde el dominio definitivo e imprimirlo para las mesas
+- 🔜 (Opcional) dominio propio
 
 ## Ideas a futuro
 
-- 💡 Reordenar productos dentro de una categoría (columna `sort_order` en `products`)
+- 💡 Reordenar productos arrastrando dentro de una categoría
 - 💡 Etiquetas: vegetariano, sin TACC, picante
-- 💡 Actualización en vivo con Supabase Realtime (la carta se refresca sola sin recargar)
-- 💡 Varios idiomas (ES / EN) para turistas
+- 💡 Actualización en vivo con Supabase Realtime
 - 💡 Horarios: mostrar "Cocina cerrada" fuera de horario
-- 💡 Analytics de Vercel para ver cuánta gente escanea el QR
+- 💡 Historial de precios (quién cambió qué y cuándo)

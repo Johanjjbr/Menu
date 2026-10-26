@@ -1,40 +1,74 @@
 import Image from "next/image";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, validPrices } from "@/lib/format";
 import type { Product } from "@/lib/types";
 
+/** Etiqueta "Agotado". */
+export function SoldOutBadge() {
+  return (
+    <span className="inline-block rounded-sm bg-vermouth px-1.5 py-0.5 text-[0.7rem] font-semibold leading-none text-white">
+      Agotado
+    </span>
+  );
+}
+
+/** Nombre del producto con su aclaración corta ("con fritas"). */
+export function ProductTitle({ product }: { product: Product }) {
+  return (
+    <h3 className="text-[1.02rem] font-semibold leading-snug">
+      {product.title}
+      {product.note && (
+        <span className="ml-1.5 text-sm font-normal text-ink-soft">{product.note.toLowerCase()}</span>
+      )}
+    </h3>
+  );
+}
+
 /**
- * Un plato de la carta: nombre ····· precio, descripción debajo y foto
- * opcional a la derecha. Si está agotado se muestra atenuado, con el
- * precio tachado y la etiqueta "Agotado".
+ * Un producto de una lista común.
+ *  - Un precio:      Nombre ········· $ 9.000
+ *  - Varios precios: Nombre, y debajo una fila por tamaño o combo
+ *  - Sin precio:     Nombre ········· Consultar
  */
 export function ProductRow({ product }: { product: Product }) {
   const soldOut = !product.is_available;
+  const prices = validPrices(product.prices);
+  const single = prices.length === 1 && !prices[0].label;
+  const priceClass = `font-display font-bold whitespace-nowrap tabular-nums ${
+    soldOut ? "line-through decoration-2" : ""
+  }`;
 
   return (
-    <li className={`flex gap-4 py-4 ${soldOut ? "opacity-60" : ""}`}>
+    <li className={`flex gap-4 py-3.5 ${soldOut ? "opacity-55" : ""}`}>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <h3 className="text-[1.05rem] font-semibold leading-snug">{product.title}</h3>
-          <span className="leader" aria-hidden="true" />
-          <span
-            className={`font-display text-lg font-bold whitespace-nowrap tabular-nums ${
-              soldOut ? "line-through decoration-2" : ""
-            }`}
-          >
-            {formatPrice(product.price)}
-          </span>
+          <ProductTitle product={product} />
+          {(single || prices.length === 0) && <span className="leader" aria-hidden="true" />}
+          {single && <span className={`text-lg ${priceClass}`}>{formatPrice(prices[0].price!)}</span>}
+          {prices.length === 0 && <span className="text-sm text-ink-soft whitespace-nowrap">Consultar</span>}
         </div>
 
         {product.description && (
-          <p className="mt-1 max-w-prose text-[0.95rem] leading-relaxed text-ink-soft">
+          <p className="mt-0.5 max-w-prose text-[0.93rem] leading-relaxed text-ink-soft">
             {product.description}
           </p>
         )}
 
+        {!single && prices.length > 0 && (
+          <dl className="mt-1.5 space-y-1">
+            {prices.map((p, i) => (
+              <div key={i} className="flex items-baseline gap-2 text-[0.95rem]">
+                <dt className="text-ink-soft">{p.label || `Opción ${i + 1}`}</dt>
+                <span className="leader" aria-hidden="true" />
+                <dd className={priceClass}>{formatPrice(p.price!)}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
         {soldOut && (
-          <span className="mt-2 inline-block rounded-sm bg-vermouth px-2 py-0.5 text-xs font-semibold text-white">
-            Agotado
-          </span>
+          <div className="mt-1.5">
+            <SoldOutBadge />
+          </div>
         )}
       </div>
 
