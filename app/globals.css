@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/*
+ * Tokens de diseño — "carta de bodegón"
+ * Verde botella como tinta, salvia claro de fondo, mostaza para
+ * destacar y rojo vermut para lo agotado / acciones destructivas.
+ */
+:root {
+  --paper: #f2f4ef;
+  --card: #ffffff;
+  --ink: #173b2f;
+  --ink-soft: #4d6158;
+  --line: #c9d1c7;
+  --mustard: #d9a21b;
+  --vermouth: #a3242b;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-mustard: var(--mustard);
+  --color-vermouth: var(--vermouth);
+  --font-sans: var(--font-figtree);
+  --font-display: var(--font-bitter);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #10241d;
+    --card: #173229;
+    --ink: #eef2ea;
+    --ink-soft: #a9bab0;
+    --line: #2f4b40;
+    --mustard: #e8b43a;
+    --vermouth: #e0646a;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  /* deja lugar para la barra de categorías fija al hacer scroll a un ancla */
+  scroll-padding-top: 4.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Foco visible para navegación con teclado */
+:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: 2px;
+}
+
+/* Línea de puntos entre el nombre del plato y el precio */
+.leader {
+  flex: 1;
+  min-width: 1rem;
+  border-bottom: 2px dotted var(--line);
+  transform: translateY(-0.3em);
+}
+
+/* Oculta la barra de scroll horizontal de las categorías */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Al imprimir desde /admin/qr solo sale la tarjeta con el QR */
+@media print {
+  body:has(#qr-card) * {
+    visibility: hidden;
+  }
+  #qr-card,
+  #qr-card * {
+    visibility: visible;
+  }
+  #qr-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
